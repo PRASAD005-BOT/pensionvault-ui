@@ -112,10 +112,7 @@ export default function Landing() {
           <button className="lp-theme-toggle" onClick={toggle} title="Toggle theme" aria-label="Toggle theme">
             {theme === 'dark' ? Ic.sun : Ic.moon}
           </button>
-          <button className="lp-btn lp-btn--ghost" onClick={() => navigate('/login')}>Sign In</button>
-          <button className="lp-btn lp-btn--primary" onClick={() => navigate('/login')}>
-            Get Started {Ic.arrow}
-          </button>
+          <button className="lp-btn lp-btn--primary" onClick={() => navigate('/login')}>Sign In</button>
         </div>
       </nav>
 

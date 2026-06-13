@@ -230,17 +230,80 @@ function MemberDashboard() {
 }
 
 function EmployerDashboard() {
+  const [profile, setProfile] = useState(null);
+  const [remits, setRemits] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const empRes = await api.get('/api/employers/me');
+        setProfile(empRes.data);
+        
+        const [mRes, rRes] = await Promise.allSettled([
+          api.get('/api/members'),
+          api.get(`/api/employers/${empRes.data.employerId}/remittances`)
+        ]);
+        
+        if (mRes.value) setMembers(mRes.value.data || []);
+        if (rRes.value) setRemits(rRes.value.data || []);
+      } catch (err) {
+        console.error("Failed to load employer dashboard data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) return <div className="page-body"><div className="spinner" style={{marginTop:40}} /></div>;
+
+  const totalRemitted = remits.reduce((sum, r) => sum + (r.totalAmount || 0), 0);
+  const recentRemits = remits.slice(0, 5);
+
   return (
     <div className="page-body">
       <div className="page-header">
         <div className="page-header-left">
           <div className="page-title">Employer Portal</div>
-          <div className="page-desc">Manage employee contributions and remittances</div>
+          <div className="page-desc">{profile?.companyName || 'Employer'} - Dashboard</div>
         </div>
       </div>
-      <div className="empty-state" style={{marginTop:40}}>
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        <p>Welcome to the Employer Portal. Use the sidebar to view Enrolled Members or submit Remittances.</p>
+
+      <div className="stats-grid">
+        <StatCard label="Enrolled Members" value={profile?.enrolledMemberCount || members.length || 0} color="blue" icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>} />
+        <StatCard label="Total Remittances" value={remits.length} color="purple" icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>} />
+        <StatCard label="Total Amount Remitted" value={formatINR(totalRemitted)} color="green" icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} />
+      </div>
+
+      <div className="table-card" style={{marginTop: 24}}>
+        <div className="table-header">
+          <span className="table-title">Recent Remittances</span>
+        </div>
+        {recentRemits.length === 0 ? (
+          <div className="empty-state"><p>No recent remittances found</p></div>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Period</th><th>Employee (₹)</th><th>Employer (₹)</th><th>Total (₹)</th><th>Date</th><th>Status</th>
+              </tr></thead>
+              <tbody>
+                {recentRemits.map(r => (
+                  <tr key={r.remittanceId}>
+                    <td>{r.remittancePeriod}</td>
+                    <td className="amount">{formatINR(r.totalEmployeeShare)}</td>
+                    <td className="amount">{formatINR(r.totalEmployerShare)}</td>
+                    <td className="amount amount-positive">{formatINR(r.totalAmount)}</td>
+                    <td>{new Date(r.remittanceDate).toLocaleDateString('en-IN')}</td>
+                    <td><StatusBadge s={r.status} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
