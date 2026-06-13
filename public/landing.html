@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PensionVault — Pension & Provident Fund Administration Platform</title>
+  <meta name="description" content="PensionVault is a modern, web-based pension and provident fund administration platform for managing member enrolment, contributions, benefit claims, and compliance reporting." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --primary-dark: #4f46e5;
+      --accent: #06b6d4;
+      --accent2: #8b5cf6;
+      --success: #10b981;
+      --gold: #f59e0b;
+      --bg: #030712;
+      --bg2: #0f1629;
+      --bg3: #111827;
+      --card: rgba(255,255,255,0.03);
+      --card-border: rgba(255,255,255,0.08);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #475569;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+    /* ─── NAVBAR ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6%; height: 68px;
+      background: rgba(3,7,18,0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+      transition: all 0.3s;
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+      text-decoration: none; color: var(--text);
+    }
+
+    .logo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 900; color: #fff;
+    }
+
+    .logo-text span { color: var(--primary-light); }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 8px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none; font-size: 14px;
+      font-weight: 500; padding: 6px 14px; border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); background: var(--card); }
+
+    .nav-cta {
+      display: flex; gap: 10px; align-items: center;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px; border-radius: 10px; font-size: 14px;
+      font-weight: 600; cursor: pointer; transition: all 0.2s;
+      text-decoration: none; border: none; font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent2));
+      color: #fff; box-shadow: 0 0 24px rgba(99,102,241,0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 32px rgba(99,102,241,0.6);
+    }
+
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-outline:hover { background: var(--card); border-color: var(--primary); color: var(--primary-light); }
+
+    .btn-lg { padding: 14px 32px; font-size: 16px; border-radius: 12px; }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 6% 80px;
+      position: relative; overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,0.25) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 85% 50%, rgba(139,92,246,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 15% 60%, rgba(6,182,212,0.1) 0%, transparent 60%);
+    }
+
+    /* Animated grid */
+    .hero-grid {
+      position: absolute; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 900px; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 100px;
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.3);
+      font-size: 13px; font-weight: 500; color: var(--primary-light);
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .badge-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent); animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.8); }
+    }
+
+    .hero-title {
+      font-size: clamp(42px, 7vw, 80px);
+      font-weight: 900; line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    .hero-title .gradient-text {
+      background: linear-gradient(135deg, var(--primary-light), var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 20px); color: var(--text-muted);
+      max-width: 640px; margin: 0 auto 40px; font-weight: 400;
+      animation: fadeUp 0.6s ease 0.2s both;
+    }
+
+    .hero-actions {
+      display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+
+    .hero-stats {
+      display: flex; gap: 48px; justify-content: center; flex-wrap: wrap;
+      margin-top: 72px;
+      animation: fadeUp 0.6s ease 0.4s both;
+    }
+
+    .hero-stat { text-align: center; }
+    .hero-stat-num { font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -1px; }
+    .hero-stat-num span { color: var(--primary-light); }
+    .hero-stat-label { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── SECTIONS ─── */
+    section { padding: 100px 6%; }
+    .section-label {
+      display: inline-block;
+      font-size: 12px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--primary-light);
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 800; letter-spacing: -1px;
+      line-height: 1.15; margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 17px; color: var(--text-muted);
+      max-width: 520px; line-height: 1.7;
+    }
+
+    .section-head { margin-bottom: 64px; }
+    .center { text-align: center; }
+    .center .section-sub { margin: 0 auto; }
+
+    /* ─── TRUSTED BAR ─── */
+    .trusted {
+      padding: 40px 6%;
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+      text-align: center;
+    }
+
+    .trusted p {
+      font-size: 12px; font-weight: 600; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--text-dim); margin-bottom: 28px;
+    }
+
+    .trusted-logos {
+      display: flex; align-items: center; justify-content: center;
+      gap: 48px; flex-wrap: wrap;
+    }
+
+    .trusted-logo {
+      font-size: 16px; font-weight: 700; color: var(--text-dim);
+      opacity: 0.5; letter-spacing: -0.5px;
+      transition: opacity 0.2s;
+    }
+
+    .trusted-logo:hover { opacity: 0.9; }
+
+    /* ─── FEATURES ─── */
+    .features-bg { background: var(--bg2); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--accent2));
+      opacity: 0; transition: opacity 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(99,102,241,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+    }
+
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 18px;
+    }
+
+    .feature-name { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .feature-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ─── HOW IT WORKS ─── */
+    .steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0; position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute; top: 28px; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--accent), var(--accent2), transparent);
+    }
+
+    .step { padding: 0 20px; text-align: center; }
+
+    .step-num {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 800; color: #fff;
+      margin: 0 auto 20px;
+      box-shadow: 0 0 24px rgba(99,102,241,0.4);
+      position: relative; z-index: 1;
+    }
+
+    .step-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .step-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ─── ROLES ─── */
+    .roles-bg { background: var(--bg2); }
+
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .role-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 28px;
+      transition: all 0.3s;
+    }
+
+    .role-card:hover {
+      border-color: rgba(99,102,241,0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+
+    .role-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .role-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    .role-name { font-size: 16px; font-weight: 700; }
+    .role-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .role-perms {
+      list-style: none; display: flex; flex-direction: column; gap: 8px;
+    }
+
+    .role-perms li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: var(--text-muted);
+    }
+
+    .role-perms li::before {
+      content: '✓'; color: var(--success);
+      font-weight: 700; font-size: 12px;
+      width: 18px; height: 18px;
+      background: rgba(16,185,129,0.1);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ─── STATS SECTION ─── */
+    .stats-section {
+      background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08));
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 40px;
+      text-align: center;
+    }
+
+    @media(max-width:768px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
+
+    .stat-num {
+      font-size: 48px; font-weight: 900; letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--primary-light), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label { font-size: 14px; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+
+    /* ─── TECHNOLOGY ─── */
+    .tech-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+    }
+
+    .tech-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 24px; text-align: center;
+      transition: all 0.2s;
+    }
+
+    .tech-card:hover { border-color: rgba(99,102,241,0.4); transform: translateY(-2px); }
+
+    .tech-icon { font-size: 32px; margin-bottom: 12px; }
+    .tech-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .tech-ver { font-size: 12px; color: var(--text-muted); }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      text-align: center;
+      background: var(--bg2);
+    }
+
+    .cta-box {
+      max-width: 720px; margin: 0 auto;
+      background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12));
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 24px;
+      padding: 64px 48px;
+      position: relative; overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute; top: -40%; left: -20%;
+      width: 400px; height: 400px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-box::after {
+      content: '';
+      position: absolute; bottom: -40%; right: -20%;
+      width: 400px; height: 400px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 900; letter-spacing: -1.5px;
+      line-height: 1.1; margin-bottom: 16px;
+      position: relative; z-index: 1;
+    }
+
+    .cta-sub {
+      color: var(--text-muted); font-size: 17px; margin-bottom: 36px;
+      position: relative; z-index: 1;
+    }
+
+    .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--card-border);
+      padding: 60px 6% 40px;
+    }
+
+    .footer-top {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    @media(max-width:768px) { .footer-top { grid-template-columns: 1fr 1fr; } }
+
+    .footer-brand p {
+      font-size: 14px; color: var(--text-muted); margin-top: 14px;
+      max-width: 280px; line-height: 1.7;
+    }
+
+    .footer-col h4 {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+      text-transform: uppercase; color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+    .footer-col ul li a {
+      font-size: 14px; color: var(--text-dim); text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-col ul li a:hover { color: var(--text); }
+
+    .footer-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 28px; border-top: 1px solid var(--card-border);
+      font-size: 13px; color: var(--text-dim); flex-wrap: wrap; gap: 12px;
+    }
+
+    /* ─── SCROLL ANIMATIONS ─── */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── FLOATING ORBS ─── */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); pointer-events: none; opacity: 0.3;
+    }
+
+    /* ─── MODULES SHOWCASE ─── */
+    .modules-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 16px;
+    }
+
+    @media(max-width:900px) { .modules-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:500px) { .modules-grid { grid-template-columns: 1fr; } }
+
+    .module-pill {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 12px; padding: 20px;
+      display: flex; align-items: center; gap: 12px;
+      transition: all 0.3s;
+    }
+
+    .module-pill:hover {
+      border-color: rgba(99,102,241,0.4);
+      background: rgba(99,102,241,0.05);
+      transform: translateX(4px);
+    }
+
+    .module-emoji { font-size: 22px; }
+    .module-pill-name { font-size: 13px; font-weight: 600; }
+    .module-pill-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ─── RESPONSIVE ─── */
+    @media(max-width:768px) {
+      nav { padding: 0 4%; }
+      .nav-links { display: none; }
+      section { padding: 70px 4%; }
+      .steps::before { display: none; }
+      .steps { gap: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAVBAR ── -->
+  <nav id="navbar">
+    <a href="#" class="nav-logo">
+      <div class="logo-icon">P</div>
+      <span class="logo-text">Pension<span>Vault</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#modules">Modules</a></li>
+      <li><a href="#roles">Roles</a></li>
+      <li><a href="#technology">Technology</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="http://localhost:5173/login" class="btn btn-outline">Sign In</a>
+      <a href="http://localhost:5173" class="btn btn-primary">Get Started →</a>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero" id="home">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <div class="badge-dot"></div>
+        Phase 1 — Production Ready · REST API + React
+      </div>
+
+      <h1 class="hero-title">
+        Modern Pension &<br />
+        <span class="gradient-text">Provident Fund</span><br />
+        Administration
+      </h1>
+
+      <p class="hero-sub">
+        A complete, enterprise-grade platform for managing member enrolments,
+        employer contributions, benefit claims, investment portfolios, and
+        regulatory compliance — all in one place.
+      </p>
+
+      <div class="hero-actions">
+        <a href="http://localhost:5173" class="btn btn-primary btn-lg">
+          Launch Platform
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="#features" class="btn btn-outline btn-lg">Explore Features</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num">17<span>+</span></div>
+          <div class="hero-stat-label">Data Entities</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">8</div>
+          <div class="hero-stat-label">Core Modules</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">6</div>
+          <div class="hero-stat-label">Stakeholder Roles</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">40<span>+</span></div>
+          <div class="hero-stat-label">REST API Endpoints</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TRUSTED ── -->
+  <div class="trusted">
+    <p>Built for Pension & Provident Fund Organisations</p>
+    <div class="trusted-logos">
+      <span class="trusted-logo">EPFO</span>
+      <span class="trusted-logo">NPS Trust</span>
+      <span class="trusted-logo">Gratuity Trust</span>
+      <span class="trusted-logo">Superannuation Fund</span>
+      <span class="trusted-logo">Occupational Schemes</span>
+      <span class="trusted-logo">PPF Administrators</span>
+    </div>
+  </div>
+
+  <!-- ── MODULES ── -->
+  <section id="modules">
+    <div class="section-head center reveal">
+      <div class="section-label">8 Core Modules</div>
+      <h2 class="section-title">Everything you need to<br />run a pension fund</h2>
+      <p class="section-sub">From member enrolment to regulatory reporting — every process is covered in a single, unified platform.</p>
+    </div>
+
+    <div class="modules-grid reveal">
+      <div class="module-pill">
+        <div class="module-emoji">🔐</div>
+        <div>
+          <div class="module-pill-name">Identity & Access</div>
+          <div class="module-pill-desc">RBAC with 6 stakeholder roles, JWT auth, audit trails</div>
+        </div>
+      </div>
+      <div class="module-pill">
+        <div class="module-emoji">👤</div>
+        <div>
+          <div class="module-pill-name">Member Enrolment</div>
+          <div class="module-pill-desc">Registration, fund accounts, scheme linkage</div>
+        </div>
+      </div>
+      <div class="module-pill">
+        <div class="module-emoji">💸</div>
+        <div>
+          <div class="module-pill-name">Contribution Processing</div>
+          <div class="module-pill-desc">Employer remittances, reconciliation, defaults</div>
+        </div>
+      </div>
+      <div class="module-pill">
+        <div class="module-emoji">📒</div>
+        <div>
+          <div class="module-pill-name">Ledger & Interest</div>
+          <div class="module-pill-desc">Real-time ledger, annual interest crediting</div>
+        </div>
+      </div>
+      <div class="module-pill">
+        <div class="module-emoji">📋</div>
+        <div>
+          <div class="module-pill-name">Benefit Claims</div>
+          <div class="module-pill-desc">Submit → Review → Approve → Disburse workflow</div>
+        </div>
+      </div>
+      <div class="module-pill">
+        <div class="module-emoji">📈</div>
+        <div>
+          <div class="module-pill-name">Investment & Corpus</div>
+          <div class="module-pill-desc">Portfolio allocation, corpus tracking, yield</div>
+        </div>
+      </div>
+      <div class="module-pill">
+        <div class="module-emoji">🏦</div>
+        <div>
+          <div class="module-pill-name">Annuity Management</div>
+          <div class="module-pill-desc">Pension plans, monthly disbursements, TDS</div>
+        </div>
+      </div>
+      <div class="module-pill">
+        <div class="module-emoji">🔔</div>
+        <div>
+          <div class="module-pill-name">Notifications</div>
+          <div class="module-pill-desc">Real-time in-app alerts for every event</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section id="features" class="features-bg">
+    <div class="section-head reveal">
+      <div class="section-label">Platform Features</div>
+      <h2 class="section-title">Built for enterprise-grade<br />fund administration</h2>
+      <p class="section-sub">Every feature has been designed to address real operational challenges faced by pension fund administrators.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(99,102,241,0.12)">🔐</div>
+        <div class="feature-name">Role-Based Access Control</div>
+        <div class="feature-desc">6 distinct roles — Admin, FundAdmin, Member, Employer, InvestmentOfficer, Compliance — each with carefully scoped API and UI access. Every endpoint is JWT-protected.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(6,182,212,0.12)">📊</div>
+        <div class="feature-name">Real-Time Ledger</div>
+        <div class="feature-desc">Every transaction — contributions, interest, claims, annuity disbursements — is instantly recorded in the member ledger with full audit trail. Members see their own view, admins see all.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(16,185,129,0.12)">⚡</div>
+        <div class="feature-name">Claim Workflow Engine</div>
+        <div class="feature-desc">Structured 4-step claim lifecycle: Submitted → UnderReview → Approved → Disbursed. Supports 7 claim types including Retirement, Housing, and Disability.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(245,158,11,0.12)">💰</div>
+        <div class="feature-name">Annuity & Pension Payouts</div>
+        <div class="feature-desc">Create LifeAnnuity, JointAnnuity, TemporaryAnnuity, and GuaranteedAnnuity plans. Process monthly disbursements with TDS calculation and complete payment history.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(139,92,246,0.12)">📈</div>
+        <div class="feature-name">Investment Portfolio Tracking</div>
+        <div class="feature-desc">Track fund allocation across 5 asset classes: Government Securities, Corporate Bonds, Equity, Fixed Deposit, and Money Market. Visual pie chart allocation view.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon" style="background:rgba(239,68,68,0.12)">📑</div>
+        <div class="feature-name">Statutory Compliance Reports</div>
+        <div class="feature-desc">Generate statutory returns by period, track contribution defaults, and browse the full audit trail with entity-type and date range filters for regulatory submissions.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STATS ── -->
+  <section class="stats-section">
+    <div class="stats-grid reveal">
+      <div>
+        <div class="stat-num">17</div>
+        <div class="stat-label">Database Entities</div>
+      </div>
+      <div>
+        <div class="stat-num">40+</div>
+        <div class="stat-label">REST API Endpoints</div>
+      </div>
+      <div>
+        <div class="stat-num">5</div>
+        <div class="stat-label">Fund Scheme Types</div>
+      </div>
+      <div>
+        <div class="stat-num">7</div>
+        <div class="stat-label">Claim Types Supported</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ── -->
+  <section id="how-it-works">
+    <div class="section-head center reveal">
+      <div class="section-label">Workflow</div>
+      <h2 class="section-title">From enrolment to pension<br />in 6 steps</h2>
+      <p class="section-sub">The complete PF lifecycle, automated and auditable at every stage.</p>
+    </div>
+
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Create Scheme</div>
+        <div class="step-desc">Admin configures EPF, Gratuity or Superannuation scheme with contribution rates and interest.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Enrol Members</div>
+        <div class="step-desc">Employers enrol employees. Fund accounts are auto-created and linked to schemes.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Process Contributions</div>
+        <div class="step-desc">Employers submit monthly remittances. FundAdmin reconciles and posts to ledger.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-title">Credit Interest</div>
+        <div class="step-desc">Annual interest is calculated and credited to every member's fund account.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-title">Process Claims</div>
+        <div class="step-desc">Members submit claims. FundAdmin reviews, approves and disburses with tax calculation.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-title">Pay Pension</div>
+        <div class="step-desc">Retirees receive monthly annuity payments with full TDS deduction and history tracking.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ROLES ── -->
+  <section id="roles" class="roles-bg">
+    <div class="section-head center reveal">
+      <div class="section-label">Stakeholder Roles</div>
+      <h2 class="section-title">One platform, six roles,<br />zero overlap</h2>
+      <p class="section-sub">Every stakeholder gets exactly the access they need — no more, no less.</p>
+    </div>
+
+    <div class="roles-grid">
+      <div class="role-card reveal">
+        <div class="role-header">
+          <div class="role-icon" style="background:rgba(99,102,241,0.15)">👑</div>
+          <div>
+            <div class="role-name">Admin</div>
+            <div class="role-sub">System Administrator</div>
+          </div>
+        </div>
+        <ul class="role-perms">
+          <li>Full system access — all 11 modules</li>
+          <li>Create schemes, employers, members</li>
+          <li>Process and reconcile remittances</li>
+          <li>Manage all claims and annuity plans</li>
+          <li>View audit trails and reports</li>
+        </ul>
+      </div>
+
+      <div class="role-card reveal">
+        <div class="role-header">
+          <div class="role-icon" style="background:rgba(6,182,212,0.15)">🏛️</div>
+          <div>
+            <div class="role-name">Fund Admin</div>
+            <div class="role-sub">Operations Manager</div>
+          </div>
+        </div>
+        <ul class="role-perms">
+          <li>Reconcile contribution remittances</li>
+          <li>Review, approve, disburse claims</li>
+          <li>Credit annual interest to accounts</li>
+          <li>Create and manage annuity plans</li>
+          <li>View compliance reports</li>
+        </ul>
+      </div>
+
+      <div class="role-card reveal">
+        <div class="role-header">
+          <div class="role-icon" style="background:rgba(16,185,129,0.15)">👤</div>
+          <div>
+            <div class="role-name">Member</div>
+            <div class="role-sub">Fund Beneficiary</div>
+          </div>
+        </div>
+        <ul class="role-perms">
+          <li>View personal fund balance</li>
+          <li>Track contribution history</li>
+          <li>View personal ledger entries</li>
+          <li>Submit benefit claims</li>
+          <li>Receive real-time notifications</li>
+        </ul>
+      </div>
+
+      <div class="role-card reveal">
+        <div class="role-header">
+          <div class="role-icon" style="background:rgba(245,158,11,0.15)">🏢</div>
+          <div>
+            <div class="role-name">Employer</div>
+            <div class="role-sub">Contributing Organisation</div>
+          </div>
+        </div>
+        <ul class="role-perms">
+          <li>Enrol employees as members</li>
+          <li>Submit monthly PF remittances</li>
+          <li>View own employee list</li>
+          <li>Track remittance history</li>
+          <li>Receive compliance alerts</li>
+        </ul>
+      </div>
+
+      <div class="role-card reveal">
+        <div class="role-header">
+          <div class="role-icon" style="background:rgba(139,92,246,0.15)">📈</div>
+          <div>
+            <div class="role-name">Investment Officer</div>
+            <div class="role-sub">Fund Manager</div>
+          </div>
+        </div>
+        <ul class="role-perms">
+          <li>Manage investment portfolios</li>
+          <li>Track asset class allocation</li>
+          <li>Record and finalise corpus</li>
+          <li>Monitor yield and returns</li>
+          <li>Generate investment reports</li>
+        </ul>
+      </div>
+
+      <div class="role-card reveal">
+        <div class="role-header">
+          <div class="role-icon" style="background:rgba(239,68,68,0.15)">⚖️</div>
+          <div>
+            <div class="role-name">Compliance Officer</div>
+            <div class="role-sub">Regulatory Oversight</div>
+          </div>
+        </div>
+        <ul class="role-perms">
+          <li>Generate statutory returns</li>
+          <li>Monitor contribution defaults</li>
+          <li>Browse complete audit trail</li>
+          <li>View employer list</li>
+          <li>Access investment corpus data</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TECHNOLOGY ── -->
+  <section id="technology">
+    <div class="section-head center reveal">
+      <div class="section-label">Technology Stack</div>
+      <h2 class="section-title">Built on modern,<br />proven technologies</h2>
+      <p class="section-sub">Enterprise-grade stack for reliability, security, and developer productivity.</p>
+    </div>
+
+    <div class="tech-grid reveal">
+      <div class="tech-card">
+        <div class="tech-icon">⚙️</div>
+        <div class="tech-name">ASP.NET Core 8</div>
+        <div class="tech-ver">REST API Backend</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">⚛️</div>
+        <div class="tech-name">React 18 + Vite</div>
+        <div class="tech-ver">Frontend SPA</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">🗄️</div>
+        <div class="tech-name">SQL Server</div>
+        <div class="tech-ver">Relational Database</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">🛡️</div>
+        <div class="tech-name">JWT + BCrypt</div>
+        <div class="tech-ver">Authentication</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">🗂️</div>
+        <div class="tech-name">Entity Framework</div>
+        <div class="tech-ver">ORM — Code First</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">📦</div>
+        <div class="tech-name">Clean Architecture</div>
+        <div class="tech-ver">Domain / App / API</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">🔄</div>
+        <div class="tech-name">Axios</div>
+        <div class="tech-ver">HTTP Client + Interceptors</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">📋</div>
+        <div class="tech-name">Swagger / OpenAPI</div>
+        <div class="tech-ver">API Documentation</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section">
+    <div class="cta-box reveal">
+      <h2 class="cta-title">Ready to modernise your<br /><span style="background:linear-gradient(135deg,#818cf8,#06b6d4,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">pension administration?</span></h2>
+      <p class="cta-sub">Launch the platform instantly. All test accounts and data are pre-loaded and ready to explore.</p>
+      <div class="cta-actions">
+        <a href="http://localhost:5173" class="btn btn-primary btn-lg">
+          Open PensionVault
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="http://localhost:5000/swagger" class="btn btn-outline btn-lg">View API Docs</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo" style="margin-bottom:0">
+          <div class="logo-icon">P</div>
+          <span class="logo-text">Pension<span>Vault</span></span>
+        </a>
+        <p>A complete pension and provident fund administration platform for modern fund managers, employers, and compliance teams.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#modules">Modules</a></li>
+          <li><a href="#roles">Roles</a></li>
+          <li><a href="#technology">Technology</a></li>
+          <li><a href="http://localhost:5000/swagger">API Docs</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Modules</h4>
+        <ul>
+          <li><a href="#">Member Enrolment</a></li>
+          <li><a href="#">Contributions</a></li>
+          <li><a href="#">Ledger & Interest</a></li>
+          <li><a href="#">Benefit Claims</a></li>
+          <li><a href="#">Annuity Plans</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Scheme Types</h4>
+        <ul>
+          <li><a href="#">EPF (Employee PF)</a></li>
+          <li><a href="#">Gratuity Trust</a></li>
+          <li><a href="#">Superannuation</a></li>
+          <li><a href="#">NPS</a></li>
+          <li><a href="#">PPF</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 PensionVault. All rights reserved.</span>
+      <span style="color:var(--text-dim)">Built with ASP.NET Core 8 + React · Phase 1</span>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 60);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => io.observe(el));
+
+    // Navbar scroll effect
+    const nav = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      nav.style.background = window.scrollY > 60
+        ? 'rgba(3,7,18,0.95)'
+        : 'rgba(3,7,18,0.7)';
+    });
+
+    // Smooth number counters
+    function countUp(el, target, suffix='') {
+      let current = 0;
+      const step = target / 60;
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = Math.floor(current) + suffix;
+        if (current >= target) clearInterval(timer);
+      }, 16);
+    }
+
+    const statsIo = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          document.querySelectorAll('.stat-num').forEach(el => {
+            const txt = el.textContent;
+            const hasPlus = txt.includes('+');
+            const num = parseInt(txt);
+            countUp(el, num, hasPlus ? '+' : '');
+          });
+          statsIo.disconnect();
+        }
+      });
+    }, { threshold: 0.5 });
+    const statsSection = document.querySelector('.stats-section');
+    if (statsSection) statsIo.observe(statsSection);
+  </script>
+</body>
+</html>
