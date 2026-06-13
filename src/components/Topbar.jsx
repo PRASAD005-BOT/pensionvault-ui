@@ -14,6 +14,9 @@ const titles = {
   '/investments': 'Investments',
   '/annuity': 'Annuity',
   '/reports': 'Reports',
+  '/notifications': 'Notifications',
+};
+
 export default function Topbar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }) {
   const { pathname } = useLocation();
   const { user } = useAuth();
