@@ -7,10 +7,13 @@ export default function Annuity() {
   const [showModal, setModal] = useState(false);
   const [showDisburse, setShowDisburse] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showSettle, setShowSettle] = useState(false);
+  const [terminateId, setTerminateId] = useState(null);
   const [historyData, setHistoryData] = useState([]);
   const [selectedAnnuity, setSelectedAnnuity] = useState(null);
   const [members, setMembers] = useState([]);
   const [form, setForm]       = useState({ memberId:'', annuityType:'LifeAnnuity', monthlyAmount:'', startDate:'', endDate:'' });
+  const [settleForm, setSettleForm] = useState({ nomineeName:'', bankAccountRef:'', settlementAmount:'' });
   const [disburseForm, setDisburseForm] = useState({ month: new Date().getMonth() + 1, year: new Date().getFullYear(), taxDeducted: 0 });
   const [saving, setSaving]   = useState(false);
   const [err, setErr]         = useState('');
@@ -53,6 +56,32 @@ export default function Annuity() {
     finally { setSaving(false); }
   };
 
+  const confirmTerminate = async () => {
+    if (!terminateId) return;
+    setSaving(true); setErr('');
+    try {
+      await api.put(`/api/annuity/${terminateId}/terminate`);
+      setTerminateId(null);
+      load();
+    } catch (er) { 
+      setErr(er.response?.data?.message || 'Failed to terminate.');
+      setTerminateId(null); 
+    } finally { setSaving(false); }
+  };
+
+  const handleSettle = async (e) => {
+    e.preventDefault(); setErr(''); setSaving(true);
+    try {
+      await api.post(`/api/annuity/${selectedAnnuity.annuityId}/nominee-settlement`, {
+        nomineeName: settleForm.nomineeName,
+        bankAccountRef: settleForm.bankAccountRef,
+        settlementAmount: parseFloat(settleForm.settlementAmount)
+      });
+      setShowSettle(false); load();
+    } catch (er) { setErr(er.response?.data?.message || 'Failed to settle annuity.'); }
+    finally { setSaving(false); }
+  };
+
   const viewHistory = async (plan) => {
     setSelectedAnnuity(plan);
     setShowHistory(true);
@@ -62,7 +91,7 @@ export default function Annuity() {
     } catch (er) { setHistoryData([]); }
   };
 
-  const getStatusName = (s) => typeof s === 'number' ? {0:'Active', 1:'Suspended', 2:'Terminated'}[s] || s : s;
+  const getStatusName = (s) => typeof s === 'number' ? {0:'Active', 1:'Suspended', 2:'Lapsed', 3:'Settled', 4:'Terminated'}[s] || s : s;
   const totalMonthly = plans.filter(p => getStatusName(p.status) === 'Active').reduce((s,p)=>s+(p.monthlyPension||0),0);
 
   return (
@@ -111,11 +140,17 @@ export default function Annuity() {
                       <td>∞ Lifetime</td>
                       <td><span className={`badge ${getStatusName(p.status)==='Active'?'badge-green':'badge-gray'}`}>{getStatusName(p.status)}</span></td>
                       <td>
-                        <div style={{display:'flex', gap:8}}>
+                        <div style={{display:'flex', gap:6, whiteSpace:'nowrap', alignItems:'center'}}>
                           {getStatusName(p.status) === 'Active' && (
                             <button className="btn btn-sm btn-success" onClick={() => { setSelectedAnnuity(p); setShowDisburse(true); }}>Disburse</button>
                           )}
                           <button className="btn btn-sm btn-outline" onClick={() => viewHistory(p)}>History</button>
+                          {getStatusName(p.status) !== 'Settled' && getStatusName(p.status) !== 'Terminated' && (
+                            <button className="btn btn-sm btn-danger" onClick={() => setTerminateId(p.annuityId)}>Terminate</button>
+                          )}
+                          {getStatusName(p.status) !== 'Settled' && (
+                            <button className="btn btn-sm btn-primary" onClick={() => { setSelectedAnnuity(p); setShowSettle(true); }}>Settle</button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -250,6 +285,62 @@ export default function Annuity() {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSettle && selectedAnnuity && (
+        <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setShowSettle(false)}>
+          <div className="modal">
+            <div className="modal-head">
+              <span className="modal-title">Nominee Settlement</span>
+              <button className="icon-btn" onClick={()=>setShowSettle(false)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <form onSubmit={handleSettle}>
+              <div className="modal-body">
+                {err && <div className="login-error" style={{marginBottom:16}}>{err}</div>}
+                <div className="form-group">
+                  <label className="form-label">Nominee Name *</label>
+                  <input className="form-input" required value={settleForm.nomineeName} onChange={e=>setSettleForm({...settleForm, nomineeName:e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Settlement Amount (₹) *</label>
+                  <input className="form-input" type="number" step="0.01" min="0" required value={settleForm.settlementAmount} onChange={e=>setSettleForm({...settleForm, settlementAmount:e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Bank Account Ref *</label>
+                  <input className="form-input" required value={settleForm.bankAccountRef} onChange={e=>setSettleForm({...settleForm, bankAccountRef:e.target.value})} />
+                </div>
+              </div>
+              <div className="modal-foot">
+                <button type="button" className="btn btn-outline" onClick={()=>setShowSettle(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={saving}>
+                  {saving ? <span className="spinner" style={{width:14,height:14,margin:0}} /> : 'Settle Annuity'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {terminateId && (
+        <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setTerminateId(null)}>
+          <div className="modal" style={{maxWidth: 400}}>
+            <div className="modal-head">
+              <span className="modal-title" style={{color: 'var(--danger)'}}>Terminate Annuity Plan</span>
+              <button className="icon-btn" onClick={()=>setTerminateId(null)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div className="modal-body">
+              <p style={{margin: '10px 0', fontSize: 15, color: 'var(--text-secondary)'}}>
+                Are you absolutely sure you want to terminate this annuity plan? This action cannot be undone and will stop all future scheduled disbursements.
+              </p>
+            </div>
+            <div className="modal-foot">
+              <button type="button" className="btn btn-outline" onClick={()=>setTerminateId(null)}>Cancel</button>
+              <button type="button" className="btn btn-danger" onClick={confirmTerminate} disabled={saving}>
+                {saving ? <span className="spinner" style={{width:14,height:14,margin:0}} /> : 'Yes, Terminate'}
+              </button>
             </div>
           </div>
         </div>

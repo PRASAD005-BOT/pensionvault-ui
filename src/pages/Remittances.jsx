@@ -14,19 +14,30 @@ export default function Remittances() {
   const [members, setMembers] = useState([]);
   const [form, setForm]       = useState({ memberId:'', payrollPeriod:'', employeeContribution:'', employerContribution:'' });
   const [saving, setSaving]   = useState(false);
-  const [err, setErr]         = useState('');
+  const [view, setView]       = useState('All');
+  const [showReport, setShowReport] = useState(null);
 
-  const load = async () => {
+  const load = async (v = view) => {
     setLoading(true);
     try {
-      const [r, m] = await Promise.all([api.get('/api/remittances'), api.get('/api/members')]);
+      let ep = '/api/remittances';
+      if (v === 'Defaulters') ep = '/api/remittances/defaulters';
+      if (v === 'Overdue') ep = '/api/remittances/overdue';
+      const [r, m] = await Promise.all([api.get(ep), api.get('/api/members')]);
       setRemits(r.data); setMembers(m.data);
     } finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(view); }, [view]);
 
   const reconcile = async (id) => {
     try { await api.post(`/api/remittances/${id}/reconcile`); load(); } catch {}
+  };
+
+  const viewReport = async (id) => {
+    try {
+      const res = await api.get(`/api/remittances/${id}/reconciliation-report`);
+      setShowReport(res.data);
+    } catch {}
   };
 
   const handleSubmit = async (e) => {
@@ -86,8 +97,19 @@ export default function Remittances() {
         ))}
       </div>
 
+      {/* Filter Tabs */}
+      <div style={{display:'flex',gap:4,marginBottom:16}}>
+        {['All','Overdue','Defaulters'].map(s => (
+          <button key={s} onClick={() => setView(s)}
+            className="btn btn-sm"
+            style={{ background: view===s ? 'var(--accent)' : 'var(--card-bg)', color: view===s ? '#fff' : 'var(--text-secondary)', border:'1px solid', borderColor: view===s ? 'var(--accent)' : 'var(--card-border)' }}>
+            {s}
+          </button>
+        ))}
+      </div>
+
       <div className="table-card">
-        <div className="table-header"><span className="table-title">Remittance Records</span></div>
+        <div className="table-header"><span className="table-title">{view} Remittances</span></div>
         {loading ? <div style={{padding:40}}><div className="spinner"/></div> : (
           <div className="table-wrap">
             <table>
@@ -104,7 +126,12 @@ export default function Remittances() {
                     <td className="amount amount-positive">{formatINR(r.totalAmount)}</td>
                     <td>{formatDate(r.remittanceDate)}</td>
                     <td><StatusBadge s={r.status} /></td>
-                    <td>{(r.status === 'Received' || r.status === 0 || r.status === 'Pending') && <button className="btn btn-sm btn-success" onClick={() => reconcile(r.remittanceId)}>Reconcile</button>}</td>
+                    <td>
+                      <div style={{display:'flex', gap:4}}>
+                        {(r.status === 'Received' || r.status === 0 || r.status === 'Pending') && <button className="btn btn-sm btn-success" onClick={() => reconcile(r.remittanceId)}>Reconcile</button>}
+                        {r.status === 'Reconciled' && <button className="btn btn-sm btn-outline" onClick={() => viewReport(r.remittanceId)}>Report</button>}
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -154,6 +181,28 @@ export default function Remittances() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showReport && (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowReport(null)}>
+          <div className="modal">
+            <div className="modal-head">
+              <span className="modal-title">Reconciliation Report</span>
+              <button className="icon-btn" onClick={() => setShowReport(null)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div className="modal-body">
+              <div style={{background:'var(--card-border)', padding:16, borderRadius:'var(--radius-md)'}}>
+                <div style={{fontSize:14, marginBottom:8}}><span className="bold">Period:</span> {showReport.remittancePeriod}</div>
+                <div style={{fontSize:14, marginBottom:8}}><span className="bold">Status:</span> <StatusBadge s={showReport.status} /></div>
+                <div style={{fontSize:14, marginBottom:8}}><span className="bold">Headcount:</span> {showReport.reconciledCount} / {showReport.expectedCount} Processed</div>
+                <div style={{fontSize:14}}><span className="bold">Amount:</span> {formatINR(showReport.totalReconciledAmount)} / {formatINR(showReport.totalExpectedAmount)} Processed</div>
+              </div>
+            </div>
+            <div className="modal-foot">
+              <button type="button" className="btn btn-outline" onClick={() => setShowReport(null)}>Close</button>
+            </div>
           </div>
         </div>
       )}

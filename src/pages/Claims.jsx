@@ -45,11 +45,18 @@ export default function Claims() {
     setSaving(s => ({ ...s, [c.claimId]: true }));
     try {
       const tax = c.eligibleAmount * 0.1;
-      await api.post(`/api/claims/${c.claimId}/disburse`, {
-        disbursedAmount: c.eligibleAmount,
-        taxDeducted: tax,
-        bankAccountRef: 'Auto-Disbursed via UI'
-      });
+      if (c.claimType === 'PartialWithdrawal') {
+        await api.post(`/api/claims/${c.claimId}/disburse-partial-withdrawal`, {
+          disbursedAmount: c.eligibleAmount,
+          bankAccountRef: 'Auto-Disbursed via UI'
+        });
+      } else {
+        await api.post(`/api/claims/${c.claimId}/disburse`, {
+          disbursedAmount: c.eligibleAmount,
+          taxDeducted: tax,
+          bankAccountRef: 'Auto-Disbursed via UI'
+        });
+      }
       await load();
     } finally { setSaving(s => ({ ...s, [c.claimId]: false })); }
   };
@@ -57,7 +64,15 @@ export default function Claims() {
   const handleSubmit = async (e) => {
     e.preventDefault(); setFormErr('');
     try {
-      await api.post('/api/claims', { ...form, eligibleAmount: parseFloat(form.eligibleAmount) || 0, claimDate: new Date().toISOString() });
+      if (form.claimType === 'PartialWithdrawal') {
+        await api.post('/api/claims/partial-withdrawal', {
+          memberId: form.memberId,
+          requestedAmount: parseFloat(form.eligibleAmount) || 0,
+          reason: form.remarks || 'Standard partial withdrawal'
+        });
+      } else {
+        await api.post('/api/claims', { ...form, eligibleAmount: parseFloat(form.eligibleAmount) || 0, claimDate: new Date().toISOString() });
+      }
       setModal(false); load();
     } catch (err) { setFormErr(err.response?.data?.message || 'Failed to submit claim.'); }
   };

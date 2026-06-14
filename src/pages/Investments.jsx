@@ -28,7 +28,14 @@ export default function Investments() {
   const handleSave = async (e) => {
     e.preventDefault(); setErr(''); setSaving(true);
     try {
-      await api.post('/api/portfolios', { ...form, schemeId: schemes[0]?.schemeId || '00000000-0000-0000-0000-000000000000', investmentAmount: parseFloat(form.investmentAmount), investmentDate: new Date().toISOString() });
+      await api.post('/api/portfolios', {
+        schemeId: schemes[0]?.schemeId || '00000000-0000-0000-0000-000000000000',
+        assetClass: form.assetClass,
+        investedValue: parseFloat(form.investmentAmount) || 0,
+        currentValue: parseFloat(form.investmentAmount) || 0,
+        yieldEarned: 0,
+        allocationPercent: 0
+      });
       setModal(false); load();
     } catch (er) { setErr(er.response?.data?.message || 'Failed to add investment.'); }
     finally { setSaving(false); }
@@ -147,6 +154,7 @@ export default function Investments() {
                     <option value="CorporateBonds">Corporate Bonds</option>
                     <option value="Equity">Equity</option>
                     <option value="FixedDeposit">Fixed Deposit</option>
+                    <option value="MoneyMarket">Money Market</option>
                     <option value="MutualFunds">Mutual Funds</option>
                   </select>
                 </div>
