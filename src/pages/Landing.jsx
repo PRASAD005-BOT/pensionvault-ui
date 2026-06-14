@@ -105,7 +105,6 @@ export default function Landing() {
           <li><a href="#features">Features</a></li>
           <li><a href="#modules">Modules</a></li>
           <li><a href="#workflow">How It Works</a></li>
-          <li><a href="#roles">Roles</a></li>
         </ul>
 
         <div className="lp-nav__actions">
@@ -207,55 +206,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── ROLES ── */}
-      <section className="lp-section" id="roles">
-        <div className="lp-section__head lp-center lp-reveal">
-          <div className="lp-eyebrow">6 Stakeholder Roles</div>
-          <h2 className="lp-section__title">One platform, six roles, zero overlap</h2>
-          <p className="lp-section__sub">Every stakeholder gets exactly the access they need — secured by JWT and RBAC.</p>
-        </div>
-        <div className="lp-roles-grid">
-          {ROLES.map(r => (
-            <div key={r.name} className="lp-role-card lp-reveal">
-              <div className="lp-role-card__header">
-                <div className={'lp-role-card__icon lp-icon--' + r.accent}>{r.icon}</div>
-                <div>
-                  <div className="lp-role-card__name">{r.name}</div>
-                  <div className="lp-role-card__sub">{r.sub}</div>
-                </div>
-              </div>
-              <ul className="lp-role-card__perms">
-                {r.perms.map(p => (
-                  <li key={p}>
-                    <span className="lp-check">{Ic.check}</span>
-                    {p}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── CTA ── */}
-      <section className="lp-section lp-section--alt">
-        <div className="lp-cta lp-reveal">
-          <h2 className="lp-cta__title">
-            Ready to modernise your<br />
-            <span className="lp-accent">pension administration?</span>
-          </h2>
-          <p className="lp-cta__sub">All test accounts and data are pre-loaded. Login and explore every module instantly.</p>
-          <div className="lp-cta__actions">
-            <button className="lp-btn lp-btn--primary lp-btn--lg" onClick={() => navigate('/login')}>
-              Open PensionVault {Ic.arrow}
-            </button>
-            <a className="lp-btn lp-btn--outline lp-btn--lg" href="http://localhost:5000/swagger" target="_blank" rel="noreferrer">
-              View API Docs
-            </a>
-          </div>
-        </div>
-      </section>
-
       {/* ── FOOTER ── */}
       <footer className="lp-footer">
         <div className="lp-footer__top">
@@ -272,7 +222,6 @@ export default function Landing() {
               <li><a href="#features">Features</a></li>
               <li><a href="#modules">Modules</a></li>
               <li><a href="#workflow">How It Works</a></li>
-              <li><a href="#roles">Roles</a></li>
               <li><a href="http://localhost:5000/swagger" target="_blank" rel="noreferrer">API Docs</a></li>
             </ul>
           </div>

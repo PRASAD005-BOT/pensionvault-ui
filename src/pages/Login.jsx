@@ -168,10 +168,6 @@ export default function Login() {
                   >
                     <option value="Member">Member (Employee)</option>
                     <option value="Employer">Employer (Company)</option>
-                    <option value="FundAdmin">Fund Administrator</option>
-                    <option value="InvestmentOfficer">Investment Officer</option>
-                    <option value="Compliance">Compliance Auditor</option>
-                    <option value="Admin">System Admin</option>
                   </select>
                 </div>
                 <div className="form-group">
