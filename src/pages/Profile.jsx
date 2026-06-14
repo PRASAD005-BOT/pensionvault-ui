@@ -16,7 +16,12 @@ export default function Profile() {
     nationalIdRef: '',
     dateOfBirth: '',
     nomineeDetails: '',
-    dateOfRetirement: ''
+    dateOfRetirement: '',
+    companyName: '',
+    registrationNumber: '',
+    industry: '',
+    remittanceFrequency: 0,
+    contactDetails: ''
   });
 
   const loadProfile = async () => {
@@ -29,16 +34,36 @@ export default function Profile() {
       if (user?.role === 'Member') {
         const me = await api.get('/api/members/me');
         setProfile(me.data);
-        setForm({
+        setForm(f => ({
+          ...f,
           name: me.data.name || user?.name || '',
           gender: me.data.gender || 'Male',
           nationalIdRef: me.data.nationalIdRef || '',
           dateOfBirth: me.data.dateOfBirth ? new Date(me.data.dateOfBirth).toISOString().split('T')[0] : '',
           nomineeDetails: me.data.nomineeDetails || '',
           dateOfRetirement: me.data.dateOfRetirement ? new Date(me.data.dateOfRetirement).toISOString().split('T')[0] : ''
-        });
+        }));
+      } else if (user?.role === 'Employer') {
+        const emp = await api.get('/api/employers/me');
+        setProfile(emp.data);
+        
+        let cleanedContact = emp.data.contactDetails || '';
+        try {
+          const parsed = JSON.parse(cleanedContact);
+          cleanedContact = parsed.email || parsed.phone || cleanedContact;
+        } catch { }
+
+        setForm(f => ({
+          ...f,
+          name: user?.name || '',
+          companyName: emp.data.companyName || '',
+          registrationNumber: emp.data.registrationNumber || '',
+          industry: emp.data.industry || '',
+          remittanceFrequency: emp.data.remittanceFrequency ?? 0,
+          contactDetails: cleanedContact
+        }));
       } else {
-        // Just show basic user info if not a member
+        // Just show basic user info if not a member or employer
         setForm(f => ({ ...f, name: user?.name || '' }));
       }
     } catch (err) {
@@ -59,14 +84,7 @@ export default function Profile() {
     setError('');
     setSuccess('');
     try {
-      if (user?.role !== 'Member') {
-        const updateData = { name: form.name };
-        const response = await api.put('/api/users/me', updateData);
-        setSuccess('Profile updated successfully!');
-        const updatedUser = { ...user, name: response.data.name };
-        localStorage.setItem('pv_user', JSON.stringify(updatedUser));
-        setTimeout(() => window.location.reload(), 1000);
-      } else {
+      if (user?.role === 'Member') {
         if (!profile) return;
         const updateData = {
           name: form.name,
@@ -81,6 +99,30 @@ export default function Profile() {
         setSuccess('Profile updated successfully!');
         setTimeout(() => setSuccess(''), 3000);
         await loadProfile();
+      } else if (user?.role === 'Employer') {
+        const userUpdateData = { name: form.name };
+        const response = await api.put('/api/users/me', userUpdateData);
+        if (profile) {
+          const empUpdateData = {
+            companyName: form.companyName,
+            industry: form.industry,
+            remittanceFrequency: form.remittanceFrequency,
+            contactDetails: form.contactDetails,
+            status: profile.status
+          };
+          await api.put(`/api/employers/${profile.employerId}`, empUpdateData);
+        }
+        setSuccess('Profile updated successfully!');
+        const updatedUser = { ...user, name: response.data.name };
+        localStorage.setItem('pv_user', JSON.stringify(updatedUser));
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        const updateData = { name: form.name };
+        const response = await api.put('/api/users/me', updateData);
+        setSuccess('Profile updated successfully!');
+        const updatedUser = { ...user, name: response.data.name };
+        localStorage.setItem('pv_user', JSON.stringify(updatedUser));
+        setTimeout(() => window.location.reload(), 1000);
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to update profile.');
@@ -150,7 +192,7 @@ export default function Profile() {
             </div>
           </div>
           
-          {user?.role !== 'Member' ? (
+          {user?.role === 'Admin' || user?.role === 'FundAdmin' || user?.role === 'Compliance' ? (
             <form onSubmit={handleSave}>
               {error && <div className="lp-error" style={{marginBottom:24, padding: 12, background: 'var(--danger-subtle)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 500}}>{error}</div>}
               {success && <div style={{marginBottom:24, padding: 12, background: 'var(--success-subtle)', color: 'var(--success)', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 500}}>{success}</div>}
@@ -163,6 +205,53 @@ export default function Profile() {
               <div className="form-group" style={{marginBottom: 32}}>
                 <label className="form-label">Role</label>
                 <input className="form-input" value={user?.role} disabled />
+              </div>
+
+              <div className="profile-save-wrapper" style={{display: 'flex', justifyContent: 'flex-end'}}>
+                <button type="submit" className="btn btn-primary" style={{ height: 40, padding: '0 24px' }} disabled={saving}>
+                  {saving ? <span className="spinner" style={{width:16,height:16,margin:0, borderTopColor: '#fff'}} /> : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          ) : user?.role === 'Employer' ? (
+            <form onSubmit={handleSave}>
+              {error && <div className="lp-error" style={{marginBottom:24, padding: 12, background: 'var(--danger-subtle)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 500}}>{error}</div>}
+              {success && <div style={{marginBottom:24, padding: 12, background: 'var(--success-subtle)', color: 'var(--success)', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 500}}>{success}</div>}
+              
+              <div className="form-group" style={{marginBottom: 20}}>
+                <label className="form-label">Contact Person Name *</label>
+                <input className="form-input" value={form.name} onChange={e => setForm({...form, name:e.target.value})} required />
+              </div>
+
+              <div className="profile-form-row" style={{display: 'flex', gap: 20, marginBottom: 20}}>
+                <div className="form-group" style={{flex: 1}}>
+                  <label className="form-label">Company Name *</label>
+                  <input className="form-input" value={form.companyName} onChange={e => setForm({...form, companyName:e.target.value})} required />
+                </div>
+                <div className="form-group" style={{flex: 1}}>
+                  <label className="form-label">Registration Number</label>
+                  <input className="form-input" value={form.registrationNumber} disabled />
+                </div>
+              </div>
+
+              <div className="profile-form-row" style={{display: 'flex', gap: 20, marginBottom: 20}}>
+                <div className="form-group" style={{flex: 1}}>
+                  <label className="form-label">Industry</label>
+                  <input className="form-input" value={form.industry} onChange={e => setForm({...form, industry:e.target.value})} />
+                </div>
+                <div className="form-group" style={{flex: 1}}>
+                  <label className="form-label">Remittance Frequency</label>
+                  <select className="form-input" value={form.remittanceFrequency} onChange={e => setForm({...form, remittanceFrequency: parseInt(e.target.value, 10)})}>
+                    <option value={0}>Monthly</option>
+                    <option value={1}>Quarterly</option>
+                    <option value={2}>Annually</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group" style={{marginBottom: 32}}>
+                <label className="form-label">Contact Details</label>
+                <input className="form-input" placeholder="Email, Phone, Address, etc." value={form.contactDetails} onChange={e => setForm({...form, contactDetails:e.target.value})} />
               </div>
 
               <div className="profile-save-wrapper" style={{display: 'flex', justifyContent: 'flex-end'}}>
@@ -223,32 +312,55 @@ export default function Profile() {
           )}
         </div>
 
-        {profile && (
-          <div className="table-card profile-sidebar" style={{ width: 320, padding: 24 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>Account Summary</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Membership Number</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{profile.membershipNumber}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Employer</div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{profile.employerName || '—'}</div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Status</div>
-                <div style={{ marginTop: 4 }}>
-                  <span className={`badge ${profile.status === 'Active' ? 'badge-green' : profile.status === 'Pending' ? 'badge-amber' : 'badge-gray'}`}>
-                    {profile.status}
-                  </span>
+        {profile && user?.role === 'Member' && (
+            <div className="table-card profile-sidebar" style={{ width: 320, padding: 24 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>Account Summary</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Membership Number</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{profile.membershipNumber}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Employer</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{profile.employerName || '—'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Status</div>
+                  <div style={{ marginTop: 4 }}>
+                    <span className={`badge ${profile.status === 'Active' ? 'badge-green' : profile.status === 'Pending' ? 'badge-amber' : 'badge-gray'}`}>
+                      {profile.status}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Joining Date</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{profile.joiningDate ? new Date(profile.joiningDate).toLocaleDateString() : '—'}</div>
                 </div>
               </div>
-              <div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Joining Date</div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{profile.joiningDate ? new Date(profile.joiningDate).toLocaleDateString() : '—'}</div>
+            </div>
+        )}
+        {profile && user?.role === 'Employer' && (
+            <div className="table-card profile-sidebar" style={{ width: 320, padding: 24 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>Employer Summary</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Registration Number</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'monospace' }}>{profile.registrationNumber}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Members Enrolled</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{profile.enrolledMemberCount}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Status</div>
+                  <div style={{ marginTop: 4 }}>
+                    <span className={`badge ${profile.status === 'Active' ? 'badge-green' : profile.status === 'Pending' ? 'badge-amber' : 'badge-gray'}`}>
+                      {profile.status}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
         )}
       </div>
     </div>

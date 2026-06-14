@@ -24,7 +24,11 @@ export default function Claims() {
     setLoading(true);
     try {
       const [c, m] = await Promise.all([api.get('/api/claims'), api.get('/api/members')]);
-      setClaims(c.data); setMembers(m.data);
+      setClaims(c.data); 
+      setMembers(m.data);
+      if (m.data.length === 1 && !isAdminOrFundAdmin) {
+        setForm(prev => ({ ...prev, memberId: m.data[0].memberId }));
+      }
     } finally { setLoading(false); }
   };
 

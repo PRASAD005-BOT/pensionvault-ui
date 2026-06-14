@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api, { formatINR, formatDate } from '../api.js';
+import { useAuth } from '../context.jsx';
 
 function StatusBadge({ s }) {
   const str = typeof s === 'number' ? ['Received','Reconciled','Shortfall','Default'][s] : s;
@@ -8,8 +9,10 @@ function StatusBadge({ s }) {
 }
 
 export default function Remittances() {
+  const { user } = useAuth();
   const [remits, setRemits]   = useState([]);
   const [loading, setLoading] = useState(true);
+  const [err, setErr]         = useState('');
   const [showModal, setModal] = useState(false);
   const [members, setMembers] = useState([]);
   const [form, setForm]       = useState({ memberId:'', payrollPeriod:'', employeeContribution:'', employerContribution:'' });
@@ -43,8 +46,11 @@ export default function Remittances() {
   const handleSubmit = async (e) => {
     e.preventDefault(); setErr(''); setSaving(true);
     try {
+      const selectedMember = members.find(m => m.memberId === form.memberId);
+      const employerId = selectedMember?.employerId || user?.organisationId || "00000000-0000-0000-0000-000000000000";
+
       await api.post('/api/remittances', {
-        employerId: "00000000-0000-0000-0000-000000000000",
+        employerId: employerId,
         remittancePeriod: form.payrollPeriod,
         totalEmployeeShare: parseFloat(form.employeeContribution),
         totalEmployerShare: parseFloat(form.employerContribution),

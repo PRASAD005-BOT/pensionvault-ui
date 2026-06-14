@@ -32,7 +32,7 @@ export default function Employers() {
     setSaving(true);
     setError('');
     try {
-      const contactDetails = JSON.stringify({ email: form.contactEmail, phone: form.contactPhone });
+      const contactDetails = [form.contactEmail, form.contactPhone].filter(Boolean).join(', ');
       await api.post('/api/employers', {
         companyName: form.companyName,
         registrationNumber: form.registrationNumber,
