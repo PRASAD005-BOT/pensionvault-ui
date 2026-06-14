@@ -59,13 +59,19 @@ export default function Investments() {
 
   const toLabel = (s) => s ? String(s).replace(/([A-Z])/g, ' $1').trim() : 'Unknown';
 
-  const chartData = portfolios.map((p, i) => ({
+  const aggregatedPortfolios = Object.values(portfolios.reduce((acc, p) => {
+    if (!acc[p.assetClass]) acc[p.assetClass] = { assetClass: p.assetClass, currentValue: 0 };
+    acc[p.assetClass].currentValue += (p.currentValue || 0);
+    return acc;
+  }, {}));
+
+  const chartData = aggregatedPortfolios.map((p, i) => ({
     name: toLabel(p.assetClass),
     value: p.currentValue || 0,
     color: COLORS[i % COLORS.length],
   }));
 
-  const totalValue = portfolios.reduce((s,p) => s + (p.currentValue||0), 0);
+  const totalValue = aggregatedPortfolios.reduce((s,p) => s + (p.currentValue||0), 0);
 
   return (
     <div className="page-body">
@@ -90,8 +96,8 @@ export default function Investments() {
           <div className="stat-label">Total Portfolio Value</div>
           <div className="stat-value" style={{fontSize:22,marginTop:8}}>{formatINR(totalValue)}</div>
         </div>
-        {portfolios.map((p,i) => (
-          <div key={p.portfolioId} className="stat-card" style={{flex:'1 1 160px'}}>
+        {aggregatedPortfolios.map((p,i) => (
+          <div key={p.assetClass} className="stat-card" style={{flex:'1 1 160px'}}>
             <div style={{width:8,height:8,borderRadius:'50%',background:COLORS[i%COLORS.length],marginBottom:6}} />
             <div className="stat-label">{toLabel(p.assetClass)}</div>
             <div style={{fontSize:15,fontWeight:700,color:'var(--text-primary)',marginTop:6}}>{formatINR(p.currentValue)}</div>
