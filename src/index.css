@@ -1016,8 +1016,21 @@ select.form-input { cursor: pointer; }
 
   /* General Adjustments */
   .page-body { padding: 16px; }
-  .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .page-header { flex-direction: column; align-items: center; text-align: center; gap: 12px; margin-bottom: 20px; }
+  .page-header-left { width: 100%; display: flex; flex-direction: column; align-items: center; }
+  .page-title { font-size: 22px; }
+  .page-desc { font-size: 13px; line-height: 1.4; margin-top: 6px; text-align: center; }
   .page-actions { width: 100%; display: flex; justify-content: flex-end; }
   .filter-bar { flex-direction: column; width: 100%; }
   .filter-bar input, .filter-bar select { width: 100%; }
+
+  /* Profile Page */
+  .profile-layout { flex-direction: column !important; align-items: stretch !important; gap: 20px !important; }
+  .profile-sidebar { width: 100% !important; }
+  .profile-form-row { flex-direction: column !important; gap: 20px !important; }
+  .profile-section-header { flex-direction: column-reverse !important; align-items: center !important; gap: 16px !important; text-align: center; }
+  .profile-avatar-wrapper { align-self: center !important; }
+  .profile-main-card { padding: 24px 20px !important; }
+  .profile-save-wrapper { justify-content: center !important; }
+  .profile-save-wrapper button { width: auto !important; padding: 0 40px !important; }
 }

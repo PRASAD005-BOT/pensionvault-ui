@@ -129,12 +129,12 @@ export default function Profile() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-        <div className="table-card" style={{ flex: 1, padding: 32 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div className="profile-layout" style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+        <div className="table-card profile-main-card" style={{ flex: 1, padding: 32 }}>
+          <div className="profile-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)' }}>Personal Details</h3>
             
-            <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => document.getElementById('avatar-upload').click()}>
+            <div className="profile-avatar-wrapper" style={{ position: 'relative', cursor: 'pointer' }} onClick={() => document.getElementById('avatar-upload').click()}>
               <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 700, overflow: 'hidden', border: '2px solid var(--card-border)' }}>
                 {user?.profileImageUrl || profile?.profileImageUrl ? (
                   <img src={`http://localhost:5000${user?.profileImageUrl || profile?.profileImageUrl}`} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
@@ -165,7 +165,7 @@ export default function Profile() {
                 <input className="form-input" value={user?.role} disabled />
               </div>
 
-              <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+              <div className="profile-save-wrapper" style={{display: 'flex', justifyContent: 'flex-end'}}>
                 <button type="submit" className="btn btn-primary" style={{ height: 40, padding: '0 24px' }} disabled={saving}>
                   {saving ? <span className="spinner" style={{width:16,height:16,margin:0, borderTopColor: '#fff'}} /> : 'Save Changes'}
                 </button>
@@ -185,7 +185,7 @@ export default function Profile() {
                 <input className="form-input" value={form.name} onChange={e => setForm({...form, name:e.target.value})} required />
               </div>
 
-              <div style={{display: 'flex', gap: 20, marginBottom: 20}}>
+              <div className="profile-form-row" style={{display: 'flex', gap: 20, marginBottom: 20}}>
                 <div className="form-group" style={{flex: 1}}>
                   <label className="form-label">National ID (Aadhaar / PAN) *</label>
                   <input className="form-input" value={form.nationalIdRef} onChange={e => setForm({...form, nationalIdRef:e.target.value})} required />
@@ -198,7 +198,7 @@ export default function Profile() {
                 </div>
               </div>
 
-              <div style={{display: 'flex', gap: 20, marginBottom: 20}}>
+              <div className="profile-form-row" style={{display: 'flex', gap: 20, marginBottom: 20}}>
                 <div className="form-group" style={{flex: 1}}>
                   <label className="form-label">Date of Birth *</label>
                   <input className="form-input" type="date" value={form.dateOfBirth} onChange={e => setForm({...form, dateOfBirth:e.target.value})} required />
@@ -214,7 +214,7 @@ export default function Profile() {
                 <input className="form-input" placeholder="Name, Relation, etc." value={form.nomineeDetails} onChange={e => setForm({...form, nomineeDetails:e.target.value})} />
               </div>
 
-              <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+              <div className="profile-save-wrapper" style={{display: 'flex', justifyContent: 'flex-end'}}>
                 <button type="submit" className="btn btn-primary" style={{ height: 40, padding: '0 24px' }} disabled={saving}>
                   {saving ? <span className="spinner" style={{width:16,height:16,margin:0, borderTopColor: '#fff'}} /> : 'Save Changes'}
                 </button>
@@ -224,7 +224,7 @@ export default function Profile() {
         </div>
 
         {profile && (
-          <div className="table-card" style={{ width: 320, padding: 24 }}>
+          <div className="table-card profile-sidebar" style={{ width: 320, padding: 24 }}>
             <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 20 }}>Account Summary</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
