@@ -63,8 +63,18 @@ export default function Topbar({ isCollapsed, setIsCollapsed, isMobileOpen, setI
         )}
       </button>
 
-      <div style={{ display:'flex', alignItems:'center', gap:8, padding:'4px 10px', background:'var(--input-bg)', border:'1px solid var(--input-border)', borderRadius:'var(--radius-md)', cursor:'default' }}>
-        <div className="avatar" style={{width:22,height:22,fontSize:9}}>{initials}</div>
+      <div 
+        onClick={() => window.location.href='/profile'}
+        style={{ display:'flex', alignItems:'center', gap:8, padding:'4px 10px', background:'var(--input-bg)', border:'1px solid var(--input-border)', borderRadius:'var(--radius-md)', cursor:'pointer', transition: 'background var(--transition)' }}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--hover-bg)'}
+        onMouseLeave={(e) => e.currentTarget.style.background = 'var(--input-bg)'}
+      >
+        <div className="avatar" style={{width:22,height:22,fontSize:9, overflow: 'hidden', background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%'}}>
+          {user?.profileImageUrl ? (
+            <img src={`http://localhost:5000${user.profileImageUrl}`} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
+          ) : null}
+          <span style={{ display: user?.profileImageUrl ? 'none' : 'block' }}>{initials}</span>
+        </div>
         <span style={{fontSize:12,fontWeight:600,color:'var(--text-primary)'}}>{user?.name}</span>
         <span style={{fontSize:11,color:'var(--text-muted)',background:'var(--card-border)',padding:'1px 6px',borderRadius:3}}>{user?.role}</span>
       </div>

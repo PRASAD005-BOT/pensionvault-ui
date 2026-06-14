@@ -16,6 +16,7 @@ import Investments from './pages/Investments.jsx';
 import Annuity from './pages/Annuity.jsx';
 import Reports from './pages/Reports.jsx';
 import Notifications from './pages/Notifications.jsx';
+import Profile from './pages/Profile.jsx';
 import './index.css';
 
 function Layout() {
@@ -64,6 +65,7 @@ export default function App() {
               <Route path="/annuity"      element={<Annuity />} />
               <Route path="/reports"      element={<Reports />} />
               <Route path="/notifications" element={<Notifications />} />
+              <Route path="/profile"      element={<Profile />} />
               <Route path="*"             element={<Navigate to="/dashboard" replace />} />
             </Route>
           </Routes>
